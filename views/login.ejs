@@ -1,0 +1,38 @@
+
+</html> 
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Page title -->
+  <title>Login</title>
+  <!-- Milligram CSS framework link -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+
+</head>
+<body>
+  <!-- Container for the form -->
+  <div class="container">
+    <!-- Heading for the login form -->
+    <h1>Login</h1>
+    <!-- Form for user login -->
+    <form method="post" action="/login">
+      <fieldset>
+        <!-- Email input field -->
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" class="input" required>
+        <!-- Password input field -->
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" class="input" required>
+        <!-- Submit button for the login form -->
+        <button type="submit" class="button-primary">Login</button>
+        <!-- Button to navigate back to the main home page -->
+        <button type="button" onclick="window.location.href='/'">Back to main home page</button>
+      </fieldset>
+    </form>
+    <!-- Placeholder for dynamic messages -->
+    <p><%= message %></p>
+    <!-- Link to the registration page for new users -->
+    <p>Don't have an account? <a href="/register">Register</a></p>
+  </div>
+</body>
+</html>

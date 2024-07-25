@@ -1,0 +1,38 @@
+<!-- views/register.ejs -->
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Page title -->
+  <title>Register</title>
+  <!-- Milligram CSS framework link -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+</head>
+<body>
+  <!-- Container for the form -->
+  <div class="container">
+    <!-- Heading for the registration form -->
+    <h1>Register</h1>
+    <!-- Form for user registration -->
+    <form method="post" action="/register">
+      <fieldset>
+        <!-- Username input field -->
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" class="input" required>
+        <!-- Email input field -->
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" class="input" required>
+        <!-- Password input field -->
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" class="input" required>
+        <!-- Submit button for the registration form -->
+        <button type="submit" class="button-primary">Register</button>
+      </fieldset>
+    </form>
+    <!-- Placeholder for dynamic messages -->
+    <p><%= message %></p>
+    <!-- Link to the login page for existing users -->
+    <p>Already have an account? <a href="/login">Login</a></p>
+  </div>
+</body>
+</html>
+
