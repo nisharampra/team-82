@@ -1,18 +1,108 @@
+
+<!-- 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Home Page</title>
-    <!-- Milligram CSS framework link -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
 </head>
 <body>
-    <!-- Container for the content -->
     <div class="container">
         <h1>Welcome, <%= username %>!</h1>
         <p>This is your home page.</p>
-        <!-- Link to logout or any other page -->
+
+        <a href="/tasks/new">Add New Task</a>
+        
+        <h2>Your Tasks</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Image</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% tasks.forEach(task => { %>
+                    <tr>
+                        <td><%= task.title %></td>
+                        <td><%= task.description %></td>
+                        <td><%= task.date %></td>
+                        <td><%= task.time %></td>
+                        <td>
+                            <% if (task.image) { %>
+                                <img src="/uploads/<%= task.image %>" alt="Task Image" style="max-width: 100px;">
+                            <% } %>
+                        </td>
+                        
+                        <td><%= task.location %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <a href="/logout">Logout</a>
+    </div>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, <%= username %>!</h1>
+        <p>This is your home page.</p>
+
+        <a href="/tasks/new">Add New Task</a>
+        
+        <h2>Your Tasks</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Image</th>
+                    <th>Location</th>
+                    <th>Actions</th> <!-- Added column for actions -->
+                </tr>
+            </thead>
+            <tbody>
+                <% tasks.forEach(task => { %>
+                    <tr>
+                        <td><%= task.title %></td>
+                        <td><%= task.description %></td>
+                        <td><%= task.date %></td>
+                        <td><%= task.time %></td>
+                        <td>
+                            <% if (task.image) { %>
+                                <img src="/uploads/<%= task.image %>" alt="Task Image" style="max-width: 100px;">
+                            <% } %>
+                        </td>
+                        <td><%= task.location %></td>
+                        <td>
+                            <!-- Remove button -->
+                            <form action="/tasks/delete/<%= task.id %>" method="POST" style="display: inline;">
+                                <button type="submit">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
         <a href="/logout">Logout</a>
     </div>
 </body>
 </html>
+
