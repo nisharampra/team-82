@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>New Task</title>
+    <!-- Add CSS or other links here -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+
 </head>
 <body>
     <h1>Add New Task</h1>
@@ -12,10 +14,12 @@
         <input type="text" id="title" name="title" required>
         <label for="description">Description:</label>
         <textarea id="description" name="description" required></textarea>
+        <label for="subtasks">Subtasks:</label>
+        <input type="text" id="subtasks" name="subtasks">
         <label for="dueDate">Due Date:</label>
-        <input type="date" id="dueDate" name="dueDate" required>
+        <input type="date" id="dueDate" name="dueDate">
         <label for="dueTime">Due Time:</label>
-        <input type="time" id="dueTime" name="dueTime" required>
+        <input type="time" id="dueTime" name="dueTime">
         <label for="image">Image:</label>
         <input type="file" id="image" name="image">
         <label for="location">Location:</label>

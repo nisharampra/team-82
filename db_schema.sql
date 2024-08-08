@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     title TEXT NOT NULL,
     description TEXT,
     date TEXT,
-    time INTEGER,
+    time TEXT,
     image TEXT,
     location TEXT,
     username TEXT
