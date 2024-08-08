@@ -82,7 +82,7 @@
                     <tr>
                         <td><%= task.title %></td>
                         <td><%= task.description %></td>
-                        <td><%= task.date %></td>
+                        <td><%= task.date %></td> <!-- Ensure this matches the property name -->
                         <td><%= task.time %></td>
                         <td>
                             <% if (task.image) { %>
@@ -91,7 +91,6 @@
                         </td>
                         <td><%= task.location %></td>
                         <td>
-                            <!-- Remove button -->
                             <form action="/tasks/delete/<%= task.id %>" method="POST" style="display: inline;">
                                 <button type="submit">Remove</button>
                             </form>
@@ -99,6 +98,7 @@
                     </tr>
                 <% }); %>
             </tbody>
+            
         </table>
 
         <a href="/logout">Logout</a>

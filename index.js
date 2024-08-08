@@ -105,19 +105,19 @@ app.post('/login', (req, res) => {
     });
 });
 
-// Route to render the home page
-app.get('/home', (req, res) => {
-    const username = req.session.username;
-    if (!username) {
-        return res.redirect('/login');
-    }
 
-    db.all('SELECT * FROM tasks WHERE username = ?', [username], (err, tasks) => {
+
+app.get('/home', (req, res) => {
+    const username = req.session.username; // Assuming you have session management
+    const query = `SELECT * FROM tasks WHERE username = ?`;
+
+    db.all(query, [username], (err, tasks) => {
         if (err) {
-            console.error('Error querying database:', err.message);
-            return res.status(500).send('Internal Server Error');
+            console.error(err.message);
+            res.status(500).send("Internal Server Error");
+            return;
         }
-        res.render('home', { username, tasks });
+        res.render('home', { username: username, tasks: tasks });
     });
 });
 
@@ -131,26 +131,49 @@ app.get('/tasks/new', (req, res) => {
 });
 
 // Route to handle task creation
+// app.post('/tasks', upload.single('image'), (req, res) => {
+//     const { title, description, date, time, location } = req.body;
+//     const username = req.session.username;
+//     if (!username) {
+//         return res.redirect('/login');
+//     }
+
+//     const image = req.file ? req.file.filename : null;
+
+//     db.run('INSERT INTO tasks (title, description, date, time, image, location, username) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+//         [title, description, date, time, image, location, username], 
+//         function(err) {
+//             if (err) {
+//                 console.error('Error inserting task into database:', err.message);
+//                 return res.render('new-task', { username, message: 'Task creation failed. Please try again.' });
+//             }
+//             res.redirect('/home');
+//         }
+//     );
+// });
 app.post('/tasks', upload.single('image'), (req, res) => {
-    const { title, description, date, time, location } = req.body;
-    const username = req.session.username;
-    if (!username) {
-        return res.redirect('/login');
+    const { title, description, dueDate, dueTime, location } = req.body;
+    const image = req.file ? req.file.filename : null;
+    const username = req.session.username; // Assuming session management for logged-in user
+
+    console.log("Form Data:", req.body); // Debugging log
+
+    if (!title || !description || !dueDate || !dueTime) {
+        return res.status(400).send("All required fields must be filled out.");
     }
 
-    const image = req.file ? req.file.filename : null;
+    const query = `INSERT INTO tasks (title, description, date, time, image, location, username) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const params = [title, description, dueDate, dueTime, image, location, username];
 
-    db.run('INSERT INTO tasks (title, description, date, time, image, location, username) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-        [title, description, date, time, image, location, username], 
-        function(err) {
-            if (err) {
-                console.error('Error inserting task into database:', err.message);
-                return res.render('new-task', { username, message: 'Task creation failed. Please try again.' });
-            }
-            res.redirect('/home');
+    db.run(query, params, function(err) {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).send("Internal Server Error");
         }
-    );
+        res.redirect('/home');
+    });
 });
+
 // Route to handle task deletion
 app.post('/tasks/delete/:id', (req, res) => {
     const taskId = req.params.id;
