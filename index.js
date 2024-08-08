@@ -10,7 +10,7 @@ const app = express();
 const port = 3000;
 
 // Set up the database
-const db = new sqlite3.Database('./your_database.db');
+const db = new sqlite3.Database('./base.db');
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
