@@ -13,3 +13,9 @@ CREATE TABLE IF NOT EXISTS tasks (
     location TEXT,
     username TEXT
 );
+-- db_schema.sql
+CREATE TABLE IF NOT EXISTS notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL
+);

@@ -107,6 +107,7 @@ app.post('/login', (req, res) => {
 
 
 
+
 app.get('/home', (req, res) => {
     const username = req.session.username; // Assuming you have session management
     const query = `SELECT * FROM tasks WHERE username = ?`;
@@ -196,6 +197,7 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
+
 
 
 // Start the server
