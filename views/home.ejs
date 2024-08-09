@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +7,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome, <%= username %>!</h1>
+        <h1>Welcome to Your Home Page!</h1>
         <p>This is your home page.</p>
 
         <a href="/tasks/new">Add New Task</a>
@@ -23,7 +22,7 @@
                     <th>Time</th>
                     <th>Image</th>
                     <th>Location</th>
-                    <th>Actions</th> <!-- Added column for actions -->
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -40,7 +39,6 @@
                         </td>
                         <td><%= task.location %></td>
                         <td>
-                            <!-- Remove button -->
                             <form action="/tasks/delete/<%= task.id %>" method="POST" style="display: inline;">
                                 <button type="submit">Remove</button>
                             </form>
@@ -50,7 +48,8 @@
             </tbody>
         </table>
 
-        <a href="/logout">Logout</a>
+        <a href="/notes">Manage Notes</a>
     </div>
 </body>
 </html>
+

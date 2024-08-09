@@ -40,6 +40,22 @@ db.serialize(() => {
         location TEXT,
         username TEXT
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        date TEXT,
+        time TEXT,
+        image TEXT,
+        location TEXT,
+        username TEXT
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL
+    )`);
+
 });
 
 // Route to render the index page
@@ -190,6 +206,49 @@ app.post('/tasks/delete/:id', (req, res) => {
         res.redirect('/home');
     });
 });
+
+// Route to render the notes page
+app.get('/notes', (req, res) => {
+    db.all('SELECT * FROM notes', (err, notes) => {
+        if (err) {
+            console.error('Error querying database:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.render('notes', { notes });
+    });
+});
+
+// Route to render the note creation form
+app.get('/notes/new', (req, res) => {
+    res.render('new-note', { message: '' });
+});
+
+// Route to handle note creation
+app.post('/notes', (req, res) => {
+    const { title, content } = req.body;
+
+    db.run('INSERT INTO notes (title, content) VALUES (?, ?)', [title, content], function(err) {
+        if (err) {
+            console.error('Error inserting note into database:', err.message);
+            return res.render('new-note', { message: 'Note creation failed. Please try again.' });
+        }
+        res.redirect('/notes');
+    });
+});
+
+// Route to handle note deletion
+app.post('/notes/delete/:id', (req, res) => {
+    const noteId = req.params.id;
+
+    db.run('DELETE FROM notes WHERE id = ?', [noteId], function(err) {
+        if (err) {
+            console.error('Error deleting note:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.redirect('/notes');
+    });
+});
+
 
 // Route to handle logout
 app.get('/logout', (req, res) => {
