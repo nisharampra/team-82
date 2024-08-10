@@ -11,6 +11,7 @@ const port = 3000;
 
 // Set up the database
 const db = new sqlite3.Database('./your_database.db');
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -40,22 +41,13 @@ db.serialize(() => {
         location TEXT,
         username TEXT
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        date TEXT,
-        time TEXT,
-        image TEXT,
-        location TEXT,
-        username TEXT
-    )`);
-    db.run(`CREATE TABLE IF NOT EXISTS notes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        content TEXT NOT NULL
-    )`);
 
+    db.run(`CREATE TABLE IF NOT EXISTS pictures (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT NOT NULL,
+        description TEXT NOT NULL,
+        likes INTEGER DEFAULT 0
+    )`);
 });
 
 // Route to render the index page
@@ -121,20 +113,19 @@ app.post('/login', (req, res) => {
     });
 });
 
-
-
-
+// Route to render the home page
 app.get('/home', (req, res) => {
-    const username = req.session.username; // Assuming you have session management
-    const query = `SELECT * FROM tasks WHERE username = ?`;
+    const username = req.session.username;
+    if (!username) {
+        return res.redirect('/login');
+    }
 
-    db.all(query, [username], (err, tasks) => {
+    db.all('SELECT * FROM tasks WHERE username = ?', [username], (err, tasks) => {
         if (err) {
-            console.error(err.message);
-            res.status(500).send("Internal Server Error");
-            return;
+            console.error('Error querying database:', err.message);
+            return res.status(500).send('Internal Server Error');
         }
-        res.render('home', { username: username, tasks: tasks });
+        res.render('home', { username, tasks });
     });
 });
 
@@ -148,47 +139,25 @@ app.get('/tasks/new', (req, res) => {
 });
 
 // Route to handle task creation
-// app.post('/tasks', upload.single('image'), (req, res) => {
-//     const { title, description, date, time, location } = req.body;
-//     const username = req.session.username;
-//     if (!username) {
-//         return res.redirect('/login');
-//     }
-
-//     const image = req.file ? req.file.filename : null;
-
-//     db.run('INSERT INTO tasks (title, description, date, time, image, location, username) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-//         [title, description, date, time, image, location, username], 
-//         function(err) {
-//             if (err) {
-//                 console.error('Error inserting task into database:', err.message);
-//                 return res.render('new-task', { username, message: 'Task creation failed. Please try again.' });
-//             }
-//             res.redirect('/home');
-//         }
-//     );
-// });
 app.post('/tasks', upload.single('image'), (req, res) => {
-    const { title, description, dueDate, dueTime, location } = req.body;
-    const image = req.file ? req.file.filename : null;
-    const username = req.session.username; // Assuming session management for logged-in user
-
-    console.log("Form Data:", req.body); // Debugging log
-
-    if (!title || !description || !dueDate || !dueTime) {
-        return res.status(400).send("All required fields must be filled out.");
+    const { title, description, date, time, location } = req.body;
+    const username = req.session.username;
+    if (!username) {
+        return res.redirect('/login');
     }
 
-    const query = `INSERT INTO tasks (title, description, date, time, image, location, username) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const params = [title, description, dueDate, dueTime, image, location, username];
+    const image = req.file ? req.file.filename : null;
 
-    db.run(query, params, function(err) {
-        if (err) {
-            console.error(err.message);
-            return res.status(500).send("Internal Server Error");
+    db.run('INSERT INTO tasks (title, description, date, time, image, location, username) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+        [title, description, date, time, image, location, username], 
+        function(err) {
+            if (err) {
+                console.error('Error inserting task into database:', err.message);
+                return res.render('new-task', { username, message: 'Task creation failed. Please try again.' });
+            }
+            res.redirect('/home');
         }
-        res.redirect('/home');
-    });
+    );
 });
 
 // Route to handle task deletion
@@ -207,49 +176,6 @@ app.post('/tasks/delete/:id', (req, res) => {
     });
 });
 
-// Route to render the notes page
-app.get('/notes', (req, res) => {
-    db.all('SELECT * FROM notes', (err, notes) => {
-        if (err) {
-            console.error('Error querying database:', err.message);
-            return res.status(500).send('Internal Server Error');
-        }
-        res.render('notes', { notes });
-    });
-});
-
-// Route to render the note creation form
-app.get('/notes/new', (req, res) => {
-    res.render('new-note', { message: '' });
-});
-
-// Route to handle note creation
-app.post('/notes', (req, res) => {
-    const { title, content } = req.body;
-
-    db.run('INSERT INTO notes (title, content) VALUES (?, ?)', [title, content], function(err) {
-        if (err) {
-            console.error('Error inserting note into database:', err.message);
-            return res.render('new-note', { message: 'Note creation failed. Please try again.' });
-        }
-        res.redirect('/notes');
-    });
-});
-
-// Route to handle note deletion
-app.post('/notes/delete/:id', (req, res) => {
-    const noteId = req.params.id;
-
-    db.run('DELETE FROM notes WHERE id = ?', [noteId], function(err) {
-        if (err) {
-            console.error('Error deleting note:', err.message);
-            return res.status(500).send('Internal Server Error');
-        }
-        res.redirect('/notes');
-    });
-});
-
-
 // Route to handle logout
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
@@ -257,7 +183,52 @@ app.get('/logout', (req, res) => {
     });
 });
 
+// Route to render the Community Page
+app.get('/community', (req, res) => {
+    const query = `SELECT * FROM pictures`;
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send("Database error.");
+        } else {
+            res.render('community', { pictures: rows });
+        }
+    });
+});
 
+// Route to handle picture uploads
+app.post('/community/upload', upload.single('picture'), (req, res) => {
+    const file = req.file;
+    const description = req.body.description;
+    
+    if (!file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const query = `INSERT INTO pictures (filename, description) VALUES (?, ?)`;
+    db.run(query, [file.filename, description], function(err) {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send("Database error.");
+        } else {
+            res.redirect('/community');
+        }
+    });
+});
+
+// Route to handle likes
+app.post('/community/like/:id', (req, res) => {
+    const id = req.params.id;
+    const query = `UPDATE pictures SET likes = likes + 1 WHERE id = ?`;
+    db.run(query, [id], function(err) {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send("Database error.");
+        } else {
+            res.redirect('/community');
+        }
+    });
+});
 
 // Start the server
 app.listen(port, () => {

@@ -19,3 +19,39 @@ CREATE TABLE IF NOT EXISTS notes (
     title TEXT NOT NULL,
     content TEXT NOT NULL
 );
+-- Create posts table
+CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    status TEXT DEFAULT 'draft',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    views INTEGER DEFAULT 0
+);
+
+-- Create comments table
+CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    article_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    username TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (article_id) REFERENCES posts(id)
+);
+
+-- Create likes table
+CREATE TABLE IF NOT EXISTS likes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    article_id INTEGER NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (article_id) REFERENCES posts(id)
+);
+
+-- Create pictures table
+CREATE TABLE IF NOT EXISTS pictures (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename TEXT NOT NULL,
+    description TEXT NOT NULL,
+    likes INTEGER DEFAULT 0
+);
