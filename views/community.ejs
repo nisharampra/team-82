@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Character set and viewport settings -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title of the page -->
+    <title>Community Page</title>
+    <!-- Link to external stylesheet for custom styles -->
+    <link rel="stylesheet" href="/styles.css">
+    <!-- Link to Milligram CSS framework for styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+</head>
+<style>
+</style>
+<body>
+    <!-- Main heading for the page -->
+    <h1 style="text-align: center;">Community Page</h1>
+    <!-- Navigation bar centered on the page -->
+    <nav style="text-align: center;">
+        <ul style="list-style: none; padding: 0;">
+            <li>
+                <a href="/home" class="nav-button-link">
+                    <button class="nav-button">
+                        Author Home Page
+                    </button>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <section>
+        <!-- Subheading for the community content section -->
+        <h2>Community Content</h2>
+        <!-- Form for uploading a picture with description -->
+        <form action="/community/upload" method="POST" enctype="multipart/form-data">
+            <label for="picture">Upload a Picture:</label>
+            <input type="file" id="picture" name="picture" accept="image/*" required>
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" required>
+            <button type="submit">Upload</button>
+        </form>
+
+        <!-- Subheading for uploaded pictures section -->
+        <h3>Uploaded Pictures</h3>
+        <!-- Container for displaying uploaded pictures in a gallery format -->
+        <div class="instagram-gallery">
+            <!-- Check if there are pictures to display -->
+            <% if (pictures && pictures.length > 0) { %>
+                <% pictures.forEach(picture => { %>
+                    <div class="card" style="width: 18rem;">
+                        <!-- Display the uploaded picture -->
+                        <img src="/uploads/<%= picture.filename %>" class="card-img-top" alt="Community Picture">
+                        <div class="card-body">
+                            <!-- Display the picture's description -->
+                            <h5 class="card-title"><%= picture.description %></h5>
+                            <!-- Form for liking the picture -->
+                            <form action="/community/like/<%= picture.id %>" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-primary">Like</button>
+                            </form>
+                            <!-- Display the number of likes for the picture -->
+                            <p class="likes-count">Likes: <%= picture.likes %></p>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+    </section>
+</body>
+</html>
