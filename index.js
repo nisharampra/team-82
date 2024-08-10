@@ -60,6 +60,35 @@ app.get('/register', (req, res) => {
     res.render('register', { message: '' });
 });
 
+// Route to render edit tasks page
+app.get('/tasks/edit/:id', (req, res) => {
+    const taskId = req.params.id;
+    findTaskById(taskId, (err, task) => {
+        if (err) {
+            return res.status(500).send('Error fetching task.');
+        }
+        if (!task) {
+            return res.status(404).send('Task not found.');
+        }
+        res.render('edit-task', { task });
+    });
+});
+
+app.get('/home', (req, res) => {
+    const username = req.session.username;
+    if (!username) {
+        return res.redirect('/login');
+    }
+
+    db.all('SELECT * FROM tasks WHERE username = ?', [username], (err, tasks) => {
+        if (err) {
+            console.error('Error querying database:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.render('home', { username, tasks });
+    });
+});
+
 // Route to handle registration form submission
 app.post('/register', (req, res) => {
     const { username, email, password } = req.body;
@@ -79,6 +108,58 @@ app.post('/register', (req, res) => {
         });
     });
 });
+
+// Route to handle modification of edited tasks
+app.post('/tasks/update/:id', upload.single('image'), (req, res) => {
+    const taskId = req.params.id;
+    const { title, description, date, time, location } = req.body;
+    const image = req.file ? req.file.filename : req.body.currentImage;
+
+    const updatedTask = {
+        title,
+        description,
+        date,
+        time,
+        location,
+        image
+    };
+
+    updateTask(taskId, updatedTask, (err) => {
+        if (err) {
+            console.error('Error updating task:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.redirect('/home');
+    });
+});
+
+// Function to find a task by ID
+function findTaskById(id, callback) {
+    db.get('SELECT * FROM tasks WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, row);
+    });
+}
+
+// Function to update a task
+function updateTask(id, updatedTask, callback) {
+    const { title, description, date, time, location, image } = updatedTask;
+    
+    const query = `
+        UPDATE tasks 
+        SET title = ?, description = ?, date = ?, time = ?, location = ?, image = ?
+        WHERE id = ?
+    `;
+    
+    db.run(query, [title, description, date, time, location, image, id], function(err) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null);
+    });
+}
 
 // Route to render the login form
 app.get('/login', (req, res) => {
@@ -113,21 +194,22 @@ app.post('/login', (req, res) => {
     });
 });
 
-// Route to render the home page
-app.get('/home', (req, res) => {
-    const username = req.session.username;
-    if (!username) {
-        return res.redirect('/login');
-    }
 
-    db.all('SELECT * FROM tasks WHERE username = ?', [username], (err, tasks) => {
+
+//Route to render manage notes 
+app.get('/notes', (req, res) => {
+    // Example: Fetch notes from the database and render the 'notes' view
+    db.all('SELECT * FROM notes', (err, rows) => {
         if (err) {
-            console.error('Error querying database:', err.message);
+            console.error('Error fetching notes:', err.message);
             return res.status(500).send('Internal Server Error');
         }
-        res.render('home', { username, tasks });
+        res.render('notes', { notes: rows });
     });
 });
+
+
+
 
 // Route to render the task creation form
 app.get('/tasks/new', (req, res) => {

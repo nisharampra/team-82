@@ -55,3 +55,6 @@ CREATE TABLE IF NOT EXISTS pictures (
     description TEXT NOT NULL,
     likes INTEGER DEFAULT 0
 );
+
+ALTER TABLE tasks ADD COLUMN date TEXT;
+ALTER TABLE tasks ADD COLUMN time TEXT;

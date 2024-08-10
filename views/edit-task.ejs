@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Task</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Task</h1>
+        <form action="/tasks/update/<%= task.id %>" method="POST" enctype="multipart/form-data">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" value="<%= task.title %>" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required><%= task.description %></textarea>
+
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" value="<%= task.date %>" required>
+
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time" value="<%= task.time %>" required>
+
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" value="<%= task.location %>">
+
+            <label for="image">Image:</label>
+            <input type="file" id="image" name="image">
+            <% if (task.image) { %>
+                <p>Current Image:</p>
+                <img src="/uploads/<%= task.image %>" alt="Task Image" style="max-width: 100px;">
+            <% } %>
+
+            <button type="submit">Update Task</button>
+        </form>
+    </div>
+</body>
+</html>

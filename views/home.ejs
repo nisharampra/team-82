@@ -11,7 +11,8 @@
         <p>This is your home page.</p>
 
         <a href="/tasks/new">Add New Task</a>
-        
+       
+
         <h2>Your Tasks</h2>
         <table>
             <thead>
@@ -39,6 +40,7 @@
                         </td>
                         <td><%= task.location %></td>
                         <td>
+                            <a href="/tasks/edit/<%= task.id %>" style="display: inline-block; margin-right: 10px;">Edit</a>
                             <form action="/tasks/delete/<%= task.id %>" method="POST" style="display: inline;">
                                 <button type="submit">Remove</button>
                             </form>
@@ -49,6 +51,10 @@
         </table>
         <nav>
             <a href="/notes">Manage Notes</a>
+            <form action="/notes" method="get">
+                <button type="submit">Manage Notes</button>
+            </form>
+            
             <br>
             <a href="/community">Community</a> 
         </nav>
@@ -56,4 +62,3 @@
     </div>
 </body>
 </html>
-
