@@ -48,6 +48,12 @@ db.serialize(() => {
         description TEXT NOT NULL,
         likes INTEGER DEFAULT 0
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL
+    )`);
+    
 });
 
 // Route to render the index page
@@ -209,6 +215,22 @@ app.get('/notes', (req, res) => {
 });
 
 
+// Route to render the "Add a New Note" form
+app.get('/notes/new', (req, res) => {
+    res.render('new-note', { message: '' });
+});
+app.post('/notes', (req, res) => {
+    const { title, content } = req.body;
+
+    // Insert the new note into the database
+    db.run('INSERT INTO notes (title, content) VALUES (?, ?)', [title, content], function(err) {
+        if (err) {
+            console.error('Error inserting note into database:', err.message);
+            return res.render('new-note', { message: 'Note creation failed. Please try again.' });
+        }
+        res.redirect('/notes');
+    });
+});
 
 
 // Route to render the task creation form
