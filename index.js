@@ -312,6 +312,22 @@ app.post('/community/like/:id', (req, res) => {
     });
 });
 
+// Route to render a shared task view
+app.get('/tasks/view/:id', (req, res) => {
+    const taskId = req.params.id;
+
+    findTaskById(taskId, (err, task) => {
+        if (err) {
+            console.error('Error fetching task:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+        if (!task) {
+            return res.status(404).send('Task not found.');
+        }
+        res.render('view-shared-task', { task });
+    });
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
