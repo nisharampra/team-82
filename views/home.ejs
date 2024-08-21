@@ -4,14 +4,38 @@
     <meta charset="UTF-8">
     <title>Home Page</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .username-container {
+            display: flex;
+            align-items: center;
+        }
+        .circle-outline {
+            width: 120px;
+            height: 120px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to Your Home Page!</h1>
+        <!-- Display the Username on the Left Side -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="username-container">
+                <div class="circle-outline"></div>
+                <h2>Welcome, <%= username %>!</h2>
+            </div>
+            <a href="/settings" style="float: right;">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </div>
+
+        <h1>Your Home Page</h1>
         <p>This is your home page.</p>
 
         <a href="/tasks/new">Add New Task</a>
-       
 
         <h2>Your Tasks</h2>
         <table>
@@ -41,9 +65,7 @@
                         <td><%= task.location %></td>
                         <td>
                             <a href="/tasks/edit/<%= task.id %>" style="display: inline-block; margin-right: 10px;">Edit</a>
-
                             <a href="#" onclick="copyToClipboard('/tasks/view/<%= task.id %>'); return false;" class="button">Share</a>
-
                             <form action="/tasks/delete/<%= task.id %>" method="POST" style="display: inline;">
                                 <button type="submit">Remove</button>
                             </form>
@@ -52,17 +74,17 @@
                 <% }); %>
             </tbody>
         </table>
+
         <nav>
             <a href="/notes">Manage Notes</a>
             <form action="/notes" method="get">
                 <button type="submit">Manage Notes</button>
             </form>
-            
             <br>
             <a href="/community">Community</a> 
         </nav>
-
     </div>
+
     <script>
         function copyToClipboard(url) {
             const textarea = document.createElement('textarea');

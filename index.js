@@ -9,6 +9,8 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
+
+
 // Set up the database
 const db = new sqlite3.Database('./your_database.db');
 
@@ -18,7 +20,29 @@ app.use(bodyParser.json());
 app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: true }));
 
 // Set up multer for file uploads
-const upload = multer({ dest: 'uploads/' });
+//const upload = multer({ dest: 'uploads/' });
+
+// Set up Multer for file upload
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+// Configure multer for file uploads
+const upload = multer({
+    dest: 'uploads/', // Directory to save uploaded files
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (!file.mimetype.startsWith('image/')) {
+            return cb(new Error('Only image files are allowed!'), false);
+        }
+        cb(null, true);
+    }
+});
 
 app.set('view engine', 'ejs');
 
@@ -94,6 +118,11 @@ app.get('/home', (req, res) => {
         res.render('home', { username, tasks });
     });
 });
+
+
+
+
+
 
 // Route to handle registration form submission
 app.post('/register', (req, res) => {
@@ -233,6 +262,51 @@ app.post('/notes', (req, res) => {
 });
 
 
+
+// Route to render the settings page
+app.get('/settings', (req, res) => {
+    const username = req.session.username;
+    if (!username) {
+        return res.redirect('/login');
+    }
+
+    res.render('settings', { username });
+});
+
+// Route to handle the settings form submission
+app.post('/settings', (req, res) => {
+    const newUsername = req.body.username;
+    const currentUsername = req.session.username;
+
+    db.serialize(() => {
+        // Update the username in the users table
+        db.run('UPDATE users SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
+            if (err) {
+                console.error('Error updating username:', err.message);
+                return res.status(500).send('Internal Server Error');
+            }
+
+            // Update the username in the tasks table
+            db.run('UPDATE tasks SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
+                if (err) {
+                    console.error('Error updating tasks with new username:', err.message);
+                    return res.status(500).send('Internal Server Error');
+                }
+
+                // Update session username
+                req.session.username = newUsername;
+                res.redirect('/home');
+            });
+        });
+    });
+});
+
+
+
+
+
+
+
 // Route to render the task creation form
 app.get('/tasks/new', (req, res) => {
     const username = req.session.username;
@@ -349,6 +423,12 @@ app.get('/tasks/view/:id', (req, res) => {
         res.render('view-shared-task', { task });
     });
 });
+
+
+
+
+
+
 
 // Start the server
 app.listen(port, () => {

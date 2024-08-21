@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL
+    profilePic TEXT  -- Add this column to store profile picture filenames
 );
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,3 +59,5 @@ CREATE TABLE IF NOT EXISTS pictures (
 
 ALTER TABLE tasks ADD COLUMN date TEXT;
 ALTER TABLE tasks ADD COLUMN time TEXT;
+
+
