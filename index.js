@@ -9,6 +9,8 @@ const path = require('path');
 const app = express();
 const port = 3000;
 
+
+
 // Set up the database
 const db = new sqlite3.Database('./your_database.db');
 
@@ -17,7 +19,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: true }));
 
-// Set up Multer for file uploads
+// Set up multer for file uploads
+//const upload = multer({ dest: 'uploads/' });
+
+// Set up Multer for file upload
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'public/uploads/');
@@ -27,8 +32,9 @@ const storage = multer.diskStorage({
     }
 });
 
+// Configure multer for file uploads
 const upload = multer({
-    storage: storage,
+    dest: 'uploads/', // Directory to save uploaded files
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
         if (!file.mimetype.startsWith('image/')) {
@@ -66,12 +72,12 @@ db.serialize(() => {
         description TEXT NOT NULL,
         likes INTEGER DEFAULT 0
     )`);
-    
     db.run(`CREATE TABLE IF NOT EXISTS notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         content TEXT NOT NULL
     )`);
+    
 });
 
 // Route to render the index page
@@ -84,12 +90,20 @@ app.get('/register', (req, res) => {
     res.render('register', { message: '' });
 });
 
-// Route to render the login form
-app.get('/login', (req, res) => {
-    res.render('login', { message: '' });
+// Route to render edit tasks page
+app.get('/tasks/edit/:id', (req, res) => {
+    const taskId = req.params.id;
+    findTaskById(taskId, (err, task) => {
+        if (err) {
+            return res.status(500).send('Error fetching task.');
+        }
+        if (!task) {
+            return res.status(404).send('Task not found.');
+        }
+        res.render('edit-task', { task });
+    });
 });
 
-// Route to render the home page
 app.get('/home', (req, res) => {
     const username = req.session.username;
     if (!username) {
@@ -105,83 +119,9 @@ app.get('/home', (req, res) => {
     });
 });
 
-// Route to render the settings page
-app.get('/settings', (req, res) => {
-    const username = req.session.username;
-    if (!username) {
-        return res.redirect('/login');
-    }
 
-    res.render('settings', { username });
-});
 
-// Route to handle the settings form submission
-app.post('/settings', (req, res) => {
-    const newUsername = req.body.username;
-    const currentUsername = req.session.username;
 
-    db.serialize(() => {
-        db.run('UPDATE users SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
-            if (err) {
-                console.error('Error updating username:', err.message);
-                return res.status(500).send('Internal Server Error');
-            }
-
-            db.run('UPDATE tasks SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
-                if (err) {
-                    console.error('Error updating tasks with new username:', err.message);
-                    return res.status(500).send('Internal Server Error');
-                }
-
-                req.session.username = newUsername;
-                res.redirect('/home');
-            });
-        });
-    });
-});
-
-app.post('/settings/password', (req, res) => {
-    const { currentPassword, newPassword, confirmPassword } = req.body;
-    const userId = req.session.userId;
-
-    if (newPassword !== confirmPassword) {
-        return res.status(400).send('New passwords do not match');
-    }
-
-    db.get('SELECT password FROM users WHERE id = ?', [userId], (err, row) => {
-        if (err) {
-            console.error(err.message);
-            return res.status(500).send('Database error');
-        }
-
-        if (!row) {
-            return res.status(400).send('User not found');
-        }
-
-        bcrypt.compare(currentPassword, row.password, (err, isMatch) => {
-            if (err || !isMatch) {
-                console.error(err ? err.message : 'Incorrect password');
-                return res.status(400).send('Current password is incorrect');
-            }
-
-            bcrypt.hash(newPassword, 10, (err, hash) => {
-                if (err) {
-                    console.error(err.message);
-                    return res.status(500).send('Error hashing new password');
-                }
-
-                db.run('UPDATE users SET password = ? WHERE id = ?', [hash, userId], function(err) {
-                    if (err) {
-                        console.error(err.message);
-                        return res.status(500).send('Database error');
-                    }
-                    req.session.destroy();  // Log the user out after password reset
-                    res.redirect('/login');
-                });
-            });
-        });
-    });
-});
 
 
 // Route to handle registration form submission
@@ -204,6 +144,64 @@ app.post('/register', (req, res) => {
     });
 });
 
+// Route to handle modification of edited tasks
+app.post('/tasks/update/:id', upload.single('image'), (req, res) => {
+    const taskId = req.params.id;
+    const { title, description, date, time, location } = req.body;
+    const image = req.file ? req.file.filename : req.body.currentImage;
+
+    const updatedTask = {
+        title,
+        description,
+        date,
+        time,
+        location,
+        image
+    };
+
+    updateTask(taskId, updatedTask, (err) => {
+        if (err) {
+            console.error('Error updating task:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.redirect('/home');
+    });
+});
+
+// Function to find a task by ID
+function findTaskById(id, callback) {
+    db.get('SELECT * FROM tasks WHERE id = ?', [id], (err, row) => {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, row);
+    });
+}
+
+// Function to update a task
+function updateTask(id, updatedTask, callback) {
+    const { title, description, date, time, location, image } = updatedTask;
+    
+    const query = `
+        UPDATE tasks 
+        SET title = ?, description = ?, date = ?, time = ?, location = ?, image = ?
+        WHERE id = ?
+    `;
+    
+    db.run(query, [title, description, date, time, location, image, id], function(err) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null);
+    });
+}
+
+// Route to render the login form
+app.get('/login', (req, res) => {
+    res.render('login', { message: '' });
+});
+
+// Route to handle login form submission
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -222,7 +220,6 @@ app.post('/login', (req, res) => {
                 return res.render('login', { message: 'Login failed. Please try again.' });
             }
             if (result) {
-                req.session.userId = row.id;
                 req.session.username = row.username;
                 res.redirect('/home');
             } else {
@@ -233,23 +230,82 @@ app.post('/login', (req, res) => {
 });
 
 
-// Function to check if user is authenticated
-function isAuthenticated(req, res, next) {
-    if (req.session && req.session.userId) {
-        db.get('SELECT * FROM users WHERE id = ?', [req.session.userId], (err, user) => {
-            if (err || !user) {
-                return res.redirect('/login');
-            }
-            req.user = user;
-            next();
-        });
-    } else {
-        res.redirect('/login');
-    }
-}
 
-// Apply isAuthenticated middleware to relevant routes
-app.use(['/home', '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated);
+//Route to render manage notes 
+app.get('/notes', (req, res) => {
+    // Example: Fetch notes from the database and render the 'notes' view
+    db.all('SELECT * FROM notes', (err, rows) => {
+        if (err) {
+            console.error('Error fetching notes:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+        res.render('notes', { notes: rows });
+    });
+});
+
+
+// Route to render the "Add a New Note" form
+app.get('/notes/new', (req, res) => {
+    res.render('new-note', { message: '' });
+});
+app.post('/notes', (req, res) => {
+    const { title, content } = req.body;
+
+    // Insert the new note into the database
+    db.run('INSERT INTO notes (title, content) VALUES (?, ?)', [title, content], function(err) {
+        if (err) {
+            console.error('Error inserting note into database:', err.message);
+            return res.render('new-note', { message: 'Note creation failed. Please try again.' });
+        }
+        res.redirect('/notes');
+    });
+});
+
+
+
+// Route to render the settings page
+app.get('/settings', (req, res) => {
+    const username = req.session.username;
+    if (!username) {
+        return res.redirect('/login');
+    }
+
+    res.render('settings', { username });
+});
+
+// Route to handle the settings form submission
+app.post('/settings', (req, res) => {
+    const newUsername = req.body.username;
+    const currentUsername = req.session.username;
+
+    db.serialize(() => {
+        // Update the username in the users table
+        db.run('UPDATE users SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
+            if (err) {
+                console.error('Error updating username:', err.message);
+                return res.status(500).send('Internal Server Error');
+            }
+
+            // Update the username in the tasks table
+            db.run('UPDATE tasks SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
+                if (err) {
+                    console.error('Error updating tasks with new username:', err.message);
+                    return res.status(500).send('Internal Server Error');
+                }
+
+                // Update session username
+                req.session.username = newUsername;
+                res.redirect('/home');
+            });
+        });
+    });
+});
+
+
+
+
+
+
 
 // Route to render the task creation form
 app.get('/tasks/new', (req, res) => {
@@ -282,69 +338,169 @@ app.post('/tasks', upload.single('image'), (req, res) => {
     );
 });
 
-// Route to render the edit tasks page
-app.get('/tasks/edit/:id', (req, res) => {
+// Route to handle task deletion
+app.post('/tasks/delete/:id', (req, res) => {
     const taskId = req.params.id;
+
+    // Delete task from the database
+    db.run('DELETE FROM tasks WHERE id = ?', [taskId], function(err) {
+        if (err) {
+            console.error('Error deleting task:', err.message);
+            return res.status(500).send('Internal Server Error');
+        }
+
+        // Redirect back to the home page
+        res.redirect('/home');
+    });
+});
+
+// Route to handle logout
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
+});
+
+// Route to render the Community Page
+app.get('/community', (req, res) => {
+    const query = `SELECT * FROM pictures`;
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send("Database error.");
+        } else {
+            res.render('community', { pictures: rows });
+        }
+    });
+});
+
+// Route to handle picture uploads
+app.post('/community/upload', upload.single('picture'), (req, res) => {
+    const file = req.file;
+    const description = req.body.description;
+    
+    if (!file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const query = `INSERT INTO pictures (filename, description) VALUES (?, ?)`;
+    db.run(query, [file.filename, description], function(err) {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send("Database error.");
+        } else {
+            res.redirect('/community');
+        }
+    });
+});
+
+// Route to handle likes
+app.post('/community/like/:id', (req, res) => {
+    const id = req.params.id;
+    const query = `UPDATE pictures SET likes = likes + 1 WHERE id = ?`;
+    db.run(query, [id], function(err) {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send("Database error.");
+        } else {
+            res.redirect('/community');
+        }
+    });
+});
+
+// Route to render a shared task view
+app.get('/tasks/view/:id', (req, res) => {
+    const taskId = req.params.id;
+
     findTaskById(taskId, (err, task) => {
         if (err) {
-            return res.status(500).send('Error fetching task.');
+            console.error('Error fetching task:', err.message);
+            return res.status(500).send('Internal Server Error');
         }
         if (!task) {
             return res.status(404).send('Task not found.');
         }
-        res.render('edit-task', { task });
+        res.render('view-shared-task', { task });
     });
 });
 
-// Route to handle task updating
-app.post('/tasks/update/:id', upload.single('image'), (req, res) => {
-    const taskId = req.params.id;
-    const { title, description, date, time, location } = req.body;
-    const image = req.file ? req.file.filename : null;
 
-    const query = image ? 
-        'UPDATE tasks SET title = ?, description = ?, date = ?, time = ?, image = ?, location = ? WHERE id = ?' : 
-        'UPDATE tasks SET title = ?, description = ?, date = ?, time = ?, location = ? WHERE id = ?';
 
-    const params = image ? 
-        [title, description, date, time, image, location, taskId] : 
-        [title, description, date, time, location, taskId];
+app.use(['/home', '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated);
 
-    db.run(query, params, function(err) {
+// Route to handle password reset
+app.post('/settings/password', (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.session.userId;
+
+    if (newPassword !== confirmPassword) {
+        return res.status(400).send('New passwords do not match');
+    }
+
+    db.get('SELECT password FROM users WHERE id = ?', [userId], (err, row) => {
         if (err) {
-            console.error('Error updating task:', err.message);
-            return res.status(500).send('Error updating task.');
+            console.error(err.message);
+            return res.status(500).send('Database error');
+        }
+
+        bcrypt.compare(currentPassword, row.password, (err, isMatch) => {
+            if (err || !isMatch) {
+                console.error(err ? err.message : 'Incorrect password');
+                return res.status(400).send('Current password is incorrect');
+            }
+
+            bcrypt.hash(newPassword, 10, (err, hash) => {
+                if (err) {
+                    console.error(err.message);
+                    return res.status(500).send('Error hashing new password');
+                }
+
+                db.run('UPDATE users SET password = ? WHERE id = ?', [hash, userId], function(err) {
+                    if (err) {
+                        console.error(err.message);
+                        return res.status(500).send('Database error');
+                    }
+                    res.redirect('/home');
+                });
+            });
+        });
+    });
+});
+
+// Function to check if user is authenticated
+function isAuthenticated(req, res, next) {
+    if (req.session && req.session.userId) {
+        db.get('SELECT * FROM users WHERE id = ?', [req.session.userId], (err, user) => {
+            if (err || !user) {
+                return res.redirect('/login');
+            }
+            req.user = user;
+            next();
+        });
+    } else {
+        res.redirect('/login');
+    }
+}
+
+app.post('/settings/username', (req, res) => {
+    const newUsername = req.body.username;
+    const userId = req.user.id;  // Ensure req.user is defined
+
+    db.run('UPDATE users SET username = ? WHERE id = ?', [newUsername, userId], (err) => {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).send('Database error');
         }
         res.redirect('/home');
     });
 });
 
-// Route to delete a task
-app.post('/tasks/delete/:id', (req, res) => {
-    const taskId = req.params.id;
-    db.run('DELETE FROM tasks WHERE id = ?', [taskId], function(err) {
-        if (err) {
-            console.error('Error deleting task:', err.message);
-            return res.status(500).send('Error deleting task.');
-        }
-        res.redirect('/home');
-    });
-});
 
 
-//logout from home page when requested 
-app.post('/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            console.error('Error logging out:', err);
-            return res.redirect('/home'); // Redirect to home page if there's an error
-        }
-        res.redirect('/login'); // Redirect to login page after logout
-    });
-});
+
 
 
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 });
