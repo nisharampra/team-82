@@ -269,7 +269,7 @@ app.post('/notes', (req, res) => {
 app.get('/settings', (req, res) => {
     const username = req.session.username;
     if (!username) {
-        return res.redirect('/login');
+        return res.redirect('/home');
     }
 
     res.render('settings', { username });
