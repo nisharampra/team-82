@@ -275,46 +275,6 @@ app.get('/settings', (req, res) => {
 });
 
 
-app.post('/settings', (req, res) => {
-    const newUsername = req.body.username;
-    const currentUsername = req.session.username;
-
-    if (!newUsername) {
-        return res.status(400).send('New username cannot be empty');
-    }
-
-    db.serialize(() => {
-        // Update the username in the users table
-        db.run('UPDATE users SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
-            if (err) {
-                console.error('Error updating username in users table:', err.message);
-                return res.status(500).send('Internal Server Error');
-            }
-
-            // Update the username in the tasks table
-            db.run('UPDATE tasks SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
-                if (err) {
-                    console.error('Error updating tasks with new username:', err.message);
-                    return res.status(500).send('Internal Server Error');
-                }
-
-                // Update session username
-                req.session.username = newUsername;
-                
-                // Optionally, you might want to refresh the page or provide a success message
-                res.redirect('/home');
-            });
-        });
-    });
-});
-
-
-
-
-
-
-
-
 
 
 
@@ -536,6 +496,8 @@ app.post('/logout', (req, res) => {
 
 
 app.use(['/home', '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated);
+
+
 
 
 // Start the server
