@@ -5,9 +5,6 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
-const crypto = require('crypto');
-
-
 
 const app = express();
 const port = 3000;
@@ -80,9 +77,6 @@ db.serialize(() => {
         title TEXT NOT NULL,
         content TEXT NOT NULL
     )`);
-
-
-    
     
 });
 
@@ -140,7 +134,8 @@ app.post('/register', (req, res) => {
             return res.status(500).send('Internal Server Error');
         }
 
-        db.run('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, hashedPassword], function(err) {
+        const query = 'INSERT INTO users (username, email, password) VALUES (?, ?, ?)';
+        db.run(query, [username, email, hashedPassword], function(err) {
             if (err) {
                 console.error('Error inserting user into database:', err.message);
                 return res.render('register', { message: 'Registration failed. Please try again.' });
@@ -149,6 +144,7 @@ app.post('/register', (req, res) => {
         });
     });
 });
+
 
 // Route to handle modification of edited tasks
 app.post('/tasks/update/:id', upload.single('image'), (req, res) => {
@@ -207,6 +203,7 @@ app.get('/login', (req, res) => {
     res.render('login', { message: '' });
 });
 
+// Route to handle login form submission
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -225,7 +222,6 @@ app.post('/login', (req, res) => {
                 return res.render('login', { message: 'Login failed. Please try again.' });
             }
             if (result) {
-                req.session.userId = row.id;
                 req.session.username = row.username;
                 res.redirect('/home');
             } else {
@@ -234,7 +230,6 @@ app.post('/login', (req, res) => {
         });
     });
 });
-
 
 
 
@@ -280,7 +275,8 @@ app.get('/settings', (req, res) => {
     res.render('settings', { username });
 });
 
-// Route to handle the settings form submission
+// Route to handle the settings form
+
 app.post('/settings', (req, res) => {
     const newUsername = req.body.username;
     const currentUsername = req.session.username;
@@ -370,16 +366,17 @@ app.get('/logout', (req, res) => {
 
 // Route to render the Community Page
 app.get('/community', (req, res) => {
-    const query = `SELECT * FROM pictures`;
+    const query = 'SELECT * FROM pictures'; // Query should be in quotes
     db.all(query, [], (err, rows) => {
         if (err) {
             console.error(err.message);
-            res.status(500).send("Database error.");
+            return res.status(500).send("Database error."); // Ensure return to stop further execution
         } else {
             res.render('community', { pictures: rows });
         }
     });
 });
+
 
 // Route to handle picture uploads
 app.post('/community/upload', upload.single('picture'), (req, res) => {
@@ -390,30 +387,32 @@ app.post('/community/upload', upload.single('picture'), (req, res) => {
         return res.status(400).send('No file uploaded.');
     }
 
-    const query = `INSERT INTO pictures (filename, description) VALUES (?, ?)`;
+    const query = 'INSERT INTO pictures (filename, description) VALUES (?, ?)';
     db.run(query, [file.filename, description], function(err) {
         if (err) {
             console.error(err.message);
-            res.status(500).send("Database error.");
+            return res.status(500).send('Database error.');
         } else {
             res.redirect('/community');
         }
     });
 });
 
+
 // Route to handle likes
 app.post('/community/like/:id', (req, res) => {
     const id = req.params.id;
-    const query = `UPDATE pictures SET likes = likes + 1 WHERE id = ?`;
+    const query = 'UPDATE pictures SET likes = likes + 1 WHERE id = ?';
     db.run(query, [id], function(err) {
         if (err) {
             console.error(err.message);
-            res.status(500).send("Database error.");
+            return res.status(500).send('Database error.');
         } else {
             res.redirect('/community');
         }
     });
 });
+
 
 // Route to render a shared task view
 app.get('/tasks/view/:id', (req, res) => {
@@ -433,6 +432,9 @@ app.get('/tasks/view/:id', (req, res) => {
 
 
 
+app.use(['/home', '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated);
+
+// Route to handle password reset
 app.post('/settings/password', (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const userId = req.session.userId;
@@ -445,10 +447,6 @@ app.post('/settings/password', (req, res) => {
         if (err) {
             console.error(err.message);
             return res.status(500).send('Database error');
-        }
-
-        if (!row) {
-            return res.status(400).send('User not found');
         }
 
         bcrypt.compare(currentPassword, row.password, (err, isMatch) => {
@@ -468,18 +466,12 @@ app.post('/settings/password', (req, res) => {
                         console.error(err.message);
                         return res.status(500).send('Database error');
                     }
-                    req.session.destroy();  // Log the user out after password reset
-                    res.redirect('/login');
+                    res.redirect('/home');
                 });
             });
         });
     });
 });
-
-
-// Apply isAuthenticated middleware to relevant routes 
-app.use(['/home',
-    '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated); 
 
 // Function to check if user is authenticated
 function isAuthenticated(req, res, next) {
@@ -509,7 +501,6 @@ app.post('/settings/username', (req, res) => {
     });
 });
 
-
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -521,12 +512,11 @@ app.post('/logout', (req, res) => {
 });
 
 
+
+
+
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
-
-
-
- 
-
