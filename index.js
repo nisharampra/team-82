@@ -201,7 +201,6 @@ app.get('/login', (req, res) => {
     res.render('login', { message: '' });
 });
 
-// Route to handle login form submission
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -220,6 +219,7 @@ app.post('/login', (req, res) => {
                 return res.render('login', { message: 'Login failed. Please try again.' });
             }
             if (result) {
+                req.session.userId = row.id;
                 req.session.username = row.username;
                 res.redirect('/home');
             } else {
@@ -228,6 +228,7 @@ app.post('/login', (req, res) => {
         });
     });
 });
+
 
 
 
@@ -426,9 +427,6 @@ app.get('/tasks/view/:id', (req, res) => {
 
 
 
-app.use(['/home', '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated);
-
-// Route to handle password reset
 app.post('/settings/password', (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const userId = req.session.userId;
@@ -441,6 +439,10 @@ app.post('/settings/password', (req, res) => {
         if (err) {
             console.error(err.message);
             return res.status(500).send('Database error');
+        }
+
+        if (!row) {
+            return res.status(400).send('User not found');
         }
 
         bcrypt.compare(currentPassword, row.password, (err, isMatch) => {
@@ -460,12 +462,18 @@ app.post('/settings/password', (req, res) => {
                         console.error(err.message);
                         return res.status(500).send('Database error');
                     }
-                    res.redirect('/home');
+                    req.session.destroy();  // Log the user out after password reset
+                    res.redirect('/login');
                 });
             });
         });
     });
 });
+
+
+// Apply isAuthenticated middleware to relevant routes 
+app.use(['/home',
+    '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated); 
 
 // Function to check if user is authenticated
 function isAuthenticated(req, res, next) {
@@ -496,6 +504,15 @@ app.post('/settings/username', (req, res) => {
 });
 
 
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error logging out:', err);
+            return res.redirect('/home'); // Redirect to home page if there's an error
+        }
+        res.redirect('/login'); // Redirect to login page after logout
+    });
+});
 
 
 
@@ -504,3 +521,6 @@ app.post('/settings/username', (req, res) => {
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
+
+
