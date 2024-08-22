@@ -5,6 +5,9 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
+
+
 
 const app = express();
 const port = 3000;
@@ -77,6 +80,9 @@ db.serialize(() => {
         title TEXT NOT NULL,
         content TEXT NOT NULL
     )`);
+
+
+    
     
 });
 
@@ -515,12 +521,12 @@ app.post('/logout', (req, res) => {
 });
 
 
-
-
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
 
+
+ 
 
