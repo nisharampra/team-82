@@ -263,29 +263,30 @@ app.post('/notes', (req, res) => {
     });
 });
 
-
-
 // Route to render the settings page
 app.get('/settings', (req, res) => {
     const username = req.session.username;
     if (!username) {
-        return res.redirect('/home');
+        return res.redirect('/login');
     }
 
     res.render('settings', { username });
 });
 
-// Route to handle the settings form
 
 app.post('/settings', (req, res) => {
     const newUsername = req.body.username;
     const currentUsername = req.session.username;
 
+    if (!newUsername) {
+        return res.status(400).send('New username cannot be empty');
+    }
+
     db.serialize(() => {
         // Update the username in the users table
         db.run('UPDATE users SET username = ? WHERE username = ?', [newUsername, currentUsername], function(err) {
             if (err) {
-                console.error('Error updating username:', err.message);
+                console.error('Error updating username in users table:', err.message);
                 return res.status(500).send('Internal Server Error');
             }
 
@@ -298,11 +299,17 @@ app.post('/settings', (req, res) => {
 
                 // Update session username
                 req.session.username = newUsername;
+                
+                // Optionally, you might want to refresh the page or provide a success message
                 res.redirect('/home');
             });
         });
     });
 });
+
+
+
+
 
 
 
@@ -473,14 +480,14 @@ app.post('/settings/password', (req, res) => {
     });
 });
 
-// Function to check if user is authenticated
+
 function isAuthenticated(req, res, next) {
-    if (req.session && req.session.userId) {
-        db.get('SELECT * FROM users WHERE id = ?', [req.session.userId], (err, user) => {
+    if (req.session && req.session.username) {
+        db.get('SELECT * FROM users WHERE username = ?', [req.session.username], (err, user) => {
             if (err || !user) {
                 return res.redirect('/login');
             }
-            req.user = user;
+            req.user = user; // Set req.user for later use
             next();
         });
     } else {
@@ -488,18 +495,26 @@ function isAuthenticated(req, res, next) {
     }
 }
 
+
+
+
 app.post('/settings/username', (req, res) => {
     const newUsername = req.body.username;
-    const userId = req.user.id;  // Ensure req.user is defined
+    const userId = req.user.id;
 
     db.run('UPDATE users SET username = ? WHERE id = ?', [newUsername, userId], (err) => {
         if (err) {
             console.error(err.message);
             return res.status(500).send('Database error');
         }
+
+        // Update session with the new username
+        req.session.username = newUsername;
+
         res.redirect('/home');
     });
 });
+
 
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
@@ -513,7 +528,7 @@ app.post('/logout', (req, res) => {
 
 
 
-
+app.use(['/home', '/tasks/*', '/settings', '/community', '/notes/*'], isAuthenticated);
 
 
 // Start the server
