@@ -1,9 +1,12 @@
+-- Corrected SQL Schema
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
     profilePic TEXT  -- Add this column to store profile picture filenames
 );
+
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -14,12 +17,14 @@ CREATE TABLE IF NOT EXISTS tasks (
     location TEXT,
     username TEXT
 );
+
 -- db_schema.sql
 CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     content TEXT NOT NULL
 );
+
 -- Create posts table
 CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +62,11 @@ CREATE TABLE IF NOT EXISTS pictures (
     likes INTEGER DEFAULT 0
 );
 
+-- These ALTER TABLE commands should only be run once. If you've already added these columns, skip these commands.
 ALTER TABLE tasks ADD COLUMN date TEXT;
 ALTER TABLE tasks ADD COLUMN time TEXT;
+
+
+
 
 
