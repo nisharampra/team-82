@@ -5,12 +5,13 @@ const bcrypt = require("bcrypt");
 const session = require("express-session");
 const multer = require("multer");
 const path = require("path");
+const crypto = require('crypto');
 
 const app = express();
 const port = 3000;
 
 // Set up the database
-const db = new sqlite3.Database("./your_database.db");
+const db = new sqlite3.Database("./database.db");
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -507,6 +508,133 @@ app.use(
   ["/home", "/tasks/*", "/settings", "/community", "/notes/*"],
   isAuthenticated
 );
+
+
+// Forgot password route
+app.get('/forgot-password', (req, res) => {
+  res.render('forgot-password', { message: '' });
+});
+
+
+
+
+
+
+
+
+// Forgot password route
+app.post('/forgot-password', (req, res) => {
+  const { username } = req.body;
+
+
+  db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
+      if (err || !user) {
+          return res.render('forgot-password', { message: 'User not found' });
+      }
+
+
+      // Generate a reset token
+      const resetToken = crypto.randomBytes(20).toString('hex');
+      const resetTokenExpiry = Date.now() + 3600000; // Token valid for 1 hour
+
+
+      // Store the reset token and its expiry in the database
+      db.run('UPDATE users SET resetToken = ?, resetTokenExpiry = ? WHERE username = ?', [resetToken, resetTokenExpiry, username], (err) => {
+          if (err) {
+              console.error(err.message);
+              return res.render('forgot-password', { message: 'Error updating reset token' });
+          }
+
+
+          // Render a page with the token
+          res.render('enter-token', { message: 'Token has been generated. Please enter it to verify.', token: resetToken });
+      });
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+// Page to enter reset token
+app.get('/verify-token', (req, res) => {
+  res.render('verify-token', { message: '' });
+});
+
+
+app.post('/verify-token', (req, res) => {
+  const { token } = req.body;
+
+
+  db.get('SELECT * FROM users WHERE resetToken = ? AND resetTokenExpiry > ?', [token, Date.now()], (err, user) => {
+      if (err || !user) {
+          return res.render('verify-token', { message: 'Invalid or expired token' });
+      }
+
+
+      res.render('reset-password', { token, message: '' });
+  });
+});
+
+
+app.get('/reset-password/:token', (req, res) => {
+  const { token } = req.params;
+
+
+  db.get('SELECT * FROM users WHERE resetToken = ? AND resetTokenExpiry > ?', [token, Date.now()], (err, user) => {
+      if (err || !user) {
+          return res.render('login', { message: 'Invalid or expired token' });
+      }
+
+
+      // Render reset password form with the valid token
+      res.render('reset-password', { token, message: '' });
+  });
+});
+app.post('/reset-password/:token', (req, res) => {
+  const { token } = req.params;
+  const { newPassword, confirmPassword } = req.body;
+
+
+  if (newPassword !== confirmPassword) {
+      return res.render('reset-password', { message: 'Passwords do not match', token });
+  }
+
+
+  db.get('SELECT * FROM users WHERE resetToken = ? AND resetTokenExpiry > ?', [token, Date.now()], (err, user) => {
+      if (err || !user) {
+          return res.render('reset-password', { message: 'Invalid or expired token', token });
+      }
+
+
+      bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+          if (err) {
+              console.error(err.message);
+              return res.render('reset-password', { message: 'Error hashing password', token });
+          }
+
+
+          db.run('UPDATE users SET password = ?, resetToken = NULL, resetTokenExpiry = NULL WHERE id = ?', [hashedPassword, user.id], (err) => {
+              if (err) {
+                  console.error(err.message);
+                  return res.render('reset-password', { message: 'Error updating password', token });
+              }
+
+
+              res.redirect('/login');
+          });
+      });
+  });
+});
+
+
 
 // Start the server
 app.listen(port, () => {

@@ -4,8 +4,13 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    profilePic TEXT  -- Add this column to store profile picture filenames
+    profilePic TEXT  ,
+    email TEXT NOT NULL,
+    resetToken TEXT,
+    resetTokenExpiry DATETIME
 );
+
+
 
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

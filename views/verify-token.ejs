@@ -1,0 +1,7 @@
+<p>Token Verified! Please reset your password.</p>
+<form method="POST" action="/reset-password/<%= token %>">
+    <input type="password" name="newPassword" placeholder="New Password" required>
+    <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+    <button type="submit">Reset Password</button>
+    <p><%= message %></p>
+</form>
