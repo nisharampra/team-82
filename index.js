@@ -22,6 +22,7 @@ app.use(
 
 app.use(express.static("views"));
 app.use(express.static("node_modules"));
+app.use(express.static(__dirname + "/views"));
 
 // Set up multer for file uploads
 //const upload = multer({ dest: 'uploads/' });
