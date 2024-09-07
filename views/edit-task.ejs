@@ -31,6 +31,8 @@
                 <img src="/uploads/<%= task.image %>" alt="Task Image" style="max-width: 100px;">
             <% } %>
 
+                <!-- Hidden field to retain current image if no new image is uploaded -->
+            <input type="hidden" name="currentImage" value="<%= task.image %>">
             <button type="submit">Update Task</button>
         </form>
     </div>
