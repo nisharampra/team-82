@@ -24,9 +24,17 @@
         <!-- Display the Username on the Left Side -->
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div class="username-container">
-                <div class="circle-outline"></div>
+                <div class="circle-outline">
+                    <% if (profilePic) { %>
+                        <img src="/uploads/<%= profilePic %>" alt="Profile Picture" style="width: 100%; height: 100%; border-radius: 50%;">
+                    <% } else { %>
+                        <img src="https://w7.pngwing.com/pngs/31/699/png-transparent-profile-profile-picture-human-face-head-man-woman-community-outline-schema-thumbnail.png" alt="Default Profile Picture" style="width: 100%; height: 100%; border-radius: 50%;">
+                    <% } %>
+                </div>
                 <h2>Welcome, <%= username %>!</h2>
             </div>
+        
+        
             <div>
                 <a href="/settings" style="margin-right: 10px;">
                     <i class="fas fa-cog"></i> Settings

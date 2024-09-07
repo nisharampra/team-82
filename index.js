@@ -9,7 +9,9 @@ const crypto = require("crypto");
 
 const app = express();
 const port = 3000;
-
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+const router = express.Router();
 // Set up the database
 const db = new sqlite3.Database("./database.db");
 
@@ -27,29 +29,34 @@ app.use(express.static(__dirname + "/views"));
 // Set up multer for file uploads
 //const upload = multer({ dest: 'uploads/' });
 
-// Set up Multer for file upload
+
+// Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/uploads/");
+      cb(null, 'uploads/'); // Directory to store the uploaded images
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+      cb(null, Date.now() + '-' + file.originalname); // Unique filename
+  }
+});
+const upload = multer({ storage: storage });
+
+// Route to handle profile picture upload
+app.post('/settings/profile-pic', upload.single('profilePic'), (req, res) => {
+  const profilePic = req.file.filename;
+  const userId = req.session.userId; // Assuming you have user sessions set up
+
+  db.run('UPDATE users SET profilePic = ? WHERE id = ?', [profilePic, userId], (err) => {
+      if (err) {
+          console.error(err.message);
+          return res.status(500).send('Error updating profile picture');
+      }
+      res.redirect('/home');
+  });
 });
 
-// Configure multer for file uploads
-const upload = multer({
-  dest: "uploads/", // Directory to save uploaded files
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith("image/")) {
-      return cb(new Error("Only image files are allowed!"), false);
-    }
-    cb(null, true);
-  },
-});
+app.set('view engine', 'ejs');
 
-app.set("view engine", "ejs");
 
 // Create tables if they don't exist
 db.serialize(() => {
@@ -108,7 +115,7 @@ app.get("/tasks/edit/:id", (req, res) => {
   });
 });
 
-app.get("/home", (req, res) => {
+/* app.get("/home", (req, res) => {
   const username = req.session.username;
   if (!username) {
     return res.redirect("/login");
@@ -121,7 +128,36 @@ app.get("/home", (req, res) => {
     }
     res.render("home", { username, tasks });
   });
+}); */
+
+app.get('/home', (req, res) => {
+  const username = req.session.username;
+  if (!username) {
+      return res.redirect('/login');
+  }
+
+  db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
+      if (err) {
+          console.error('Error querying database:', err.message);
+          return res.status(500).send('Internal Server Error');
+      }
+
+      db.all('SELECT * FROM tasks WHERE username = ?', [username], (err, tasks) => {
+          if (err) {
+              console.error('Error querying database:', err.message);
+              return res.status(500).send('Internal Server Error');
+          }
+
+          // Pass profilePic from user object to the template
+          res.render('home', { username, profilePic: user.profilePic, tasks });
+      });
+  });
 });
+
+app.use('/uploads', express.static('uploads'));
+
+
+
 
 // Route to handle registration form submission
 app.post("/register", (req, res) => {
