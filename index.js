@@ -1,17 +1,24 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const sqlite3 = require("sqlite3").verbose();
-const bcrypt = require("bcrypt");
-const session = require("express-session");
-const multer = require("multer");
-const path = require("path");
-const crypto = require("crypto");
+import express from 'express';
+import bodyParser from 'body-parser';
+import sqlite3 from 'sqlite3';
+import bcrypt from 'bcrypt';
+import session from 'express-session';
+import multer from 'multer';
+import path from 'path';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url'; // Import for ES module __dirname fix
+
+// Construct __dirname in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 const router = express.Router();
+
 // Set up the database
 const db = new sqlite3.Database("./database.db");
 
@@ -24,22 +31,19 @@ app.use(
 
 app.use(express.static("views"));
 app.use(express.static("node_modules"));
-app.use(express.static(__dirname + "/views"));
-
-// Set up multer for file uploads
-//const upload = multer({ dest: 'uploads/' });
-
+app.use(express.static(path.join(__dirname, "/views"))); // Use path.join with __dirname
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-      cb(null, 'uploads/'); // Directory to store the uploaded images
+      cb(null, path.join(__dirname, 'uploads/')); // Use path.join for uploads directory
   },
   filename: function (req, file, cb) {
       cb(null, Date.now() + '-' + file.originalname); // Unique filename
   }
 });
 const upload = multer({ storage: storage });
+
 
 // Route to handle profile picture upload
 app.post('/settings/profile-pic', upload.single('profilePic'), (req, res) => {
@@ -309,6 +313,22 @@ app.post("/notes", (req, res) => {
       res.redirect("/notes");
     }
   );
+});
+
+// Route to remove a note
+app.post('/notes/delete/:id', (req, res) => {
+  const noteId = req.params.id;
+
+  const query = `DELETE FROM notes WHERE id = ?`;
+
+  db.run(query, [noteId], function (err) {
+    if (err) {
+      console.error('Error deleting note:', err);
+      return res.status(500).send('An error occurred while deleting the note.');
+    }
+
+    res.redirect('/notes');
+  });
 });
 
 // Route to render the settings page
@@ -683,3 +703,5 @@ app.post("/reset-password/:token", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+
+export { app };
