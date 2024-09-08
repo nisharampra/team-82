@@ -1,69 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <!-- Character set and viewport settings -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title of the page -->
-    <title>Community Page</title>
-    <!-- Link to external stylesheet for custom styles -->
-    <link rel="stylesheet" href="/styles.css">
-    <!-- Link to Milligram CSS framework for styling -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
-</head>
-<style>
-</style>
-<body>
-    <!-- Main heading for the page -->
-    <h1 style="text-align: center;">Community Page</h1>
-    <!-- Navigation bar centered on the page -->
-    <nav style="text-align: center;">
-        <ul style="list-style: none; padding: 0;">
-            <li>
-                <a href="/home" class="nav-button-link">
-                    <button class="nav-button">
-                        Author Home Page
-                    </button>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    <section>
-        <!-- Subheading for the community content section -->
-        <h2>Community Content</h2>
-        <!-- Form for uploading a picture with description -->
-        <form action="/community/upload" method="POST" enctype="multipart/form-data">
-            <label for="picture">Upload a Picture:</label>
-            <input type="file" id="picture" name="picture" accept="image/*" required>
-            <label for="description">Description:</label>
-            <input type="text" id="description" name="description" required>
-            <button type="submit">Upload</button>
-        </form>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Community</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <nav
+      class="flex items-center justify-between px-8 text-white h-20"
+      style="background-color: #312e81"
+    >
+      <div class="flex items-center">
+        <a href="/">
+          <img
+            class="h-10 w-auto"
+            src="https://w7.pngwing.com/pngs/162/843/png-transparent-computer-icons-calendar-date-others-miscellaneous-text-calendar-thumbnail.png"
+            alt="Your Company"
+          />
+        </a>
 
-        <!-- Subheading for uploaded pictures section -->
-        <h3>Uploaded Pictures</h3>
-        <!-- Container for displaying uploaded pictures in a gallery format -->
-        <div class="instagram-gallery">
-            <!-- Check if there are pictures to display -->
-            <% if (pictures && pictures.length > 0) { %>
-                <% pictures.forEach(picture => { %>
-                    <div class="card" style="width: 18rem;">
-                        <!-- Display the uploaded picture -->
-                        <img src="/uploads/<%= picture.filename %>" class="card-img-top" alt="Community Picture">
-                        <div class="card-body">
-                            <!-- Display the picture's description -->
-                            <h5 class="card-title"><%= picture.description %></h5>
-                            <!-- Form for liking the picture -->
-                            <form action="/community/like/<%= picture.id %>" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-primary">Like</button>
-                            </form>
-                            <!-- Display the number of likes for the picture -->
-                            <p class="likes-count">Likes: <%= picture.likes %></p>
-                        </div>
-                    </div>
-                <% }) %>
-            <% } %>
+        <div class="flex items-center pl-3">
+          <a href="/">
+            <span class="text-2xl">ToDo App</span>
+          </a>
         </div>
-    </section>
-</body>
+      </div>
+
+      <div class="ml-auto flex items-center">
+        <a href="/home" style="margin-right: 15px">
+          <button
+            type="button"
+            class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+          >
+            Back to Author Home
+          </button>
+        </a>
+      </div>
+    </nav>
+    <div class="container">
+      <div
+        class="flex min-h-full flex-col justify-center px-6 py-5 lg:px-8 sm:mx-auto sm:w-full sm:max-w-sm"
+      >
+        <h2
+          class="mt-8 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900"
+        >
+          Community Homepage
+        </h2>
+      </div>
+
+      <form
+        action="/community/upload"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <div class="space-y-12">
+          <div class="border-b border-gray-900/10 pb-12">
+            <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+              <div class="col-span-full">
+                <label
+                  for="picture"
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                  >Upload a Picture</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="file"
+                    id="picture"
+                    name="picture"
+                    accept="image/*"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="col-span-full">
+                <label
+                  for="description"
+                  class="block text-sm font-medium leading-6 text-gray-900"
+                  >Description</label
+                >
+                <div class="mt-2">
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows="3"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    required
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-end gap-x-6">
+          <a href="/home"
+            ><button
+              type="button"
+              class="text-sm font-semibold leading-6 text-gray-900"
+            >
+              Cancel
+            </button></a
+          >
+          <button
+            type="submit"
+            class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            Upload Picture
+          </button>
+        </div>
+      </form>
+
+      <div
+        class="flex min-h-full flex-col justify-center px-6 py-5 lg:px-8 sm:mx-auto sm:w-full sm:max-w-sm"
+      >
+        <h2
+          class="mt-8 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900"
+        >
+          Uploaded pictures:
+        </h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
+        <!-- Check if there are pictures to display -->
+        <% if (pictures && pictures.length > 0) { %>
+          <% pictures.forEach(picture => { %>
+            <div class="bg-white border rounded-lg overflow-hidden shadow-lg">
+              <!-- Display the uploaded picture -->
+              <img
+                src="/uploads/<%= picture.filename %>"
+                class="w-full h-48 object-cover"
+                alt="Community Picture"
+              />
+              <div class="p-4">
+                <!-- Display the picture's description -->
+                <h5 class="text-lg font-semibold mb-2"><%= picture.description %></h5>
+                <!-- Form for liking the picture -->
+                <form action="/community/like/<%= picture.id %>" method="POST" class="inline">
+                    <button
+                    type="submit"
+                    class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Like
+                  </button>
+                </form>
+                <!-- Display the number of likes for the picture -->
+                <p class="mt-2 text-gray-600">Likes: <%= picture.likes %></p>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </body>
 </html>

@@ -1,37 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Notes</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <h1>Your Notes</h1>
-        <a href="/notes/new">Add New Note</a>
-        <table>
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Content</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% notes.forEach(note => { %>
-                    <tr>
-                        <td><%= note.title %></td>
-                        <td><%= note.content %></td>
-                        <td>
-                            <form action="/notes/delete/<%= note.id %>" method="POST" style="display: inline;">
-                                <button type="submit">Remove</button>
-                            </form>
-                        </td>
-                    </tr>
-                <% }); %>
-            </tbody>
+      <div
+        class="flex min-h-full flex-col justify-center px-6 py-5 lg:px-8 sm:mx-auto sm:w-full sm:max-w-sm"
+      >
+        <h2
+          class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900"
+        >
+          Notes
+        </h2>
+      </div>
+
+      <p class="mt-8 text-center text-sm text-gray-500">
+        <a href="/notes/new" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Add New Note</a>
+      </p>
+
+      <div
+        class="relative flex flex-col w-full h-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border"
+      >
+        <table class="w-full text-left table-auto min-w-max">
+          <thead>
+            <tr>
+              <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+                <p
+                  class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+                >
+                  Title
+                </p>
+              </th>
+              <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+                <p
+                  class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+                >
+                  Content
+                </p>
+              </th>
+              <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+                <p
+                  class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+                >
+                  Action
+                </p>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% notes.forEach(note => { %>
+            <tr>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p
+                  class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                >
+                  <%= note.title %>
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p
+                  class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+                >
+                  <%= note.content %>
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <form
+                  action="/notes/delete/<%= note.id %>"
+                  method="POST"
+                  style="display: inline"
+                >
+                  <button
+                    type="submit"
+                    class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  >
+                    Remove
+                  </button>
+                </form>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
         </table>
-        <a href="/home">Back to Home</a>
+      </div>
+
+
+
+      <p class="mt-10 text-center text-sm">
+        <a href="/home" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Back to Author Homepage</a>
+      </p>
     </div>
-</body>
+  </body>
 </html>

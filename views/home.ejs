@@ -1,112 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Home Page</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/milligram@1.4.1/dist/milligram.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        .username-container {
-            display: flex;
-            align-items: center;
-        }
-        .circle-outline {
-            width: 120px;
-            height: 120px;
-            border: 2px solid #000;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Display the Username on the Left Side -->
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="username-container">
-                <div class="circle-outline">
-                    <% if (profilePic) { %>
-                        <img src="/uploads/<%= profilePic %>" alt="Profile Picture" style="width: 100%; height: 100%; border-radius: 50%;">
-                    <% } else { %>
-                        <img src="https://w7.pngwing.com/pngs/31/699/png-transparent-profile-profile-picture-human-face-head-man-woman-community-outline-schema-thumbnail.png" alt="Default Profile Picture" style="width: 100%; height: 100%; border-radius: 50%;">
-                    <% } %>
-                </div>
-                <h2>Welcome, <%= username %>!</h2>
-            </div>
-        
-        
-            <div>
-                <a href="/settings" style="margin-right: 10px;">
-                    <i class="fas fa-cog"></i> Settings
-                </a>
-                <form action="/logout" method="POST" style="display: inline;">
-                    <button type="submit" class="button">Logout</button>
-                </form>
-            </div>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+
+  <body>
+    <nav
+      class="flex items-center justify-between px-8 text-white h-20"
+      style="background-color: #312e81"
+    >
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <div
+            class="w-16 h-16 border-2 border-black rounded-full overflow-hidden mr-4"
+          >
+            <% if (profilePic) { %>
+            <img
+              src="/uploads/<%= profilePic %>"
+              alt="Profile Picture"
+              class="w-full h-full object-cover"
+            />
+            <% } else { %>
+            <img
+              src="https://w7.pngwing.com/pngs/31/699/png-transparent-profile-profile-picture-human-face-head-man-woman-community-outline-schema-thumbnail.png"
+              alt="Default Profile Picture"
+              class="w-full h-full object-cover"
+            />
+            <% } %>
+          </div>
+          <h2 class="text-lg font-semibold ml-0.25"><%= username %></h2>
+        </div>
+      </div>
+
+      <div class="ml-auto flex items-center">
+        <a href="/settings" style="margin-right: 15px">
+          <button
+            type="button"
+            class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+          >
+            Settings
+          </button>
+        </a>
+        <form action="/logout" method="POST" style="display: inline">
+          <button
+            type="submit"
+            class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+          >
+            Logout
+          </button>
+        </form>
+      </div>
+    </nav>
+
+    <div class="container mx-auto">
+        <div
+          class="flex flex-col px-6 py-5 lg:px-8 sm:w-full sm:max-w-sm"
+        >
+          <h2
+            class="mt-8 text-left text-4xl font-bold leading-tight tracking-tight text-gray-900"
+          >
+            Welcome <%= username %>!
+          </h2>
+          
         </div>
 
-        <h1>Your Home Page</h1>
-        <p>This is your home page.</p>
-
-        <a href="/tasks/new">Add New Task</a>
-
-        <h2>Your Tasks</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Image</th>
-                    <th>Location</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% tasks.forEach(task => { %>
-                    <tr>
-                        <td><%= task.title %></td>
-                        <td><%= task.description %></td>
-                        <td><%= task.date %></td>
-                        <td><%= task.time %></td>
-                        <td>
-                            <% if (task.image) { %>
-                                <img src="/uploads/<%= task.image %>" alt="Task Image" style="max-width: 100px;">
-                            <% } %>
-                        </td>
-                        <td><%= task.location %></td>
-                        <td>
-                            <a href="/tasks/edit/<%= task.id %>" style="display: inline-block; margin-right: 10px;">Edit</a>
-                            <a href="#" onclick="copyToClipboard('/tasks/view/<%= task.id %>'); return false;" class="button">Share</a>
-                            <form action="/tasks/delete/<%= task.id %>" method="POST" style="display: inline;">
-                                <button type="submit">Remove</button>
-                            </form>
-                        </td>
-                    </tr>
-                <% }); %>
-            </tbody>
-        </table>
-
-        <nav>
-            <form action="/notes" method="get">
-                <button type="submit">Manage Notes</button>
+        <div class="flex items-center ml-8">
+            <form action="/notes" method="get" class="mr-4">
+              <button
+                type="submit"
+                class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              >
+                Manage Notes
+              </button>
             </form>
-            <br>
-            <a href="/community">Community</a> 
-        </nav>
-    </div>
+          
+            <a href="/community">
+              <button
+                type="button"
+                class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              >
+                Community
+              </button>
+            </a>
+          </div>
 
-    <script>
-        function copyToClipboard(url) {
-            const textarea = document.createElement('textarea');
-            textarea.value = window.location.origin + url;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('Link copied to clipboard!');
-        }
-    </script>
-</body>
+        <div class="flex flex-col px-6 py-5 lg:px-8 sm:w-full sm:max-w-sm">
+            <h2
+            class="text-left text-3xl font-bold leading-tight tracking-tight text-gray-900"
+            >
+            Your Tasks
+            </h2>
+        </div>
+
+        <div
+        class="relative flex flex-col w-full h-full text-gray-700 bg-white shadow-md rounded-xl bg-clip-border"
+      >
+      <table class="w-full text-left table-auto min-w-max">
+        <thead>
+          <tr>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Title
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Description
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Date
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Time
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Image
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Location
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Action
+              </p>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% tasks.forEach(task => { %>
+            <tr>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                  <%= task.title %>
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                  <%= task.description %>
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                  <%= task.date %>
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                  <%= task.time %>
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <% if (task.image) { %>
+                  <img src="/uploads/<%= task.image %>" alt="Task Image" style="max-width: 100px;">
+                <% } %>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                  <%= task.location %>
+                </p>
+              </td>
+              <td class="p-4 border-b border-blue-gray-50">
+                <a href="/tasks/edit/<%= task.id %>" style="display: inline-block; margin-right: 10px;">
+                  <button type="button" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    Edit
+                  </button>
+                </a>
+                <a href="#" onclick="copyToClipboard('/tasks/view/<%= task.id %>'); return false;">
+                  <button type="button" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    Share
+                  </button>
+                </a>
+                <form action="/tasks/delete/<%= task.id %>" method="POST" style="display: inline;">
+                  <button type="submit" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                    Remove
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      
+      
+      </div>
+
+        <p class="mt-8 text-center text-sm text-gray-500">
+            <a href="/tasks/new" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Add New Task</a>
+        </p>
+    
+      </div>    
+  </body>
 </html>
