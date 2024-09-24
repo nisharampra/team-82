@@ -87,6 +87,15 @@
           </div>
 
         <div class="flex flex-col px-6 py-5 lg:px-8 sm:w-full sm:max-w-sm">
+          <h1 class="text-left text-3xl font-bold leading-tight tracking-tight text-gray-900">Progress
+          </h1>
+            <div id="progressBar">
+              <div id="progress">
+              </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col px-6 py-5 lg:px-8 sm:w-full sm:max-w-sm">
             <h2
             class="text-left text-3xl font-bold leading-tight tracking-tight text-gray-900"
             >
@@ -140,6 +149,18 @@
         <tbody>
           <% tasks.forEach(task => { %>
             <tr>
+              <td class="p-4 border-b border-blue-gray-50">
+                <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                  <input
+                    type="checkbox"
+                    class="task-checkbox"
+                    data-task-id="<%= task.id %>"
+                    <%= task.completed ? 'checked' : '' %>
+                  />
+                  <%= task.name %>
+                </p>
+              </td>
+
               <td class="p-4 border-b border-blue-gray-50">
                 <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
                   <%= task.title %>
@@ -199,6 +220,31 @@
             <a href="/tasks/new" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Add New Task</a>
         </p>
     
-      </div>    
+      </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+      
+          const updateStats = () => {
+            const totalTasks = taskCheckboxes.length;
+            const completedTasks = Array.from(taskCheckboxes).filter(
+              checkbox => checkbox.checked
+            ).length;
+            const progress = (completedTasks / totalTasks) * 100;
+            const progressBar = document.getElementById('progress');
+            progressBar.style.width = `${progress}%`;
+          };
+      
+          // Add event listener to each checkbox to update progress when changed
+          taskCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateStats);
+          });
+      
+          // Initialize progress on page load
+          updateStats();
+        });
+      </script>
+
   </body>
 </html>
